@@ -1,0 +1,42 @@
+  tab.className = 'sector-tab';
+  tab.setAttribute('data-color', s.color);
+  tab.setAttribute('data-index', i);
+  tab.innerHTML = `<span class="sector-icon">${s.icon}</span><span class="sector-name">${s.name}</span>`;
+  row.appendChild(tab);
+ 
+  const card = document.createElement('div');
+  card.className = 'detail-card';
+  card.id = `card-${i}`;
+  card.setAttribute('data-color', s.color);
+ 
+  const tagsHtml = s.tags.map(tag => `<span class="tech-tag">${tag}</span>`).join('');
+  card.innerHTML = `
+    <div class="detail-inner">
+      <div class="detail-header">
+        <div class="detail-icon">${s.icon}</div>
+        <div class="detail-title">${s.name}</div>
+      </div>
+      <div class="detail-text">${s.text}</div>
+      <div class="tech-tags">${tagsHtml}</div>
+    </div>
+  `;
+  panel.appendChild(card);
+ 
+  tab.onclick = () => {
+    document.querySelectorAll('.sector-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.detail-card').forEach(c => c.classList.remove('active'));
+    placeholder.style.display = 'none';
+    tab.classList.add('active');
+    card.classList.add('active');
+    tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  };
+}
+
+// Автоматически активируем первый сектор
+if (row.firstChild) {
+  row.firstChild.click();
+}
+</script>
+
+</body>
+</html>
