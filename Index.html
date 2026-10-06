@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ИИ по сферам применения</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg-body: #f8fafc;
+    --card-bg: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 20px 30px -10px rgba(15, 23, 42, 0.12);
+  }
+
+  /* Цветовые темы для секторов */
+  [data-color="blue"] {
+    --accent: #2563eb;
+    --accent-bg: rgba(37, 99, 235, 0.08);
+    --accent-border: rgba(37, 99, 235, 0.25);
+  }
+  [data-color="green"] {
+    --accent: #16a34a;
+    --accent-bg: rgba(22, 163, 74, 0.08);
+    --accent-border: rgba(22, 163, 74, 0.25);
+  }
+  [data-color="amber"] {
+    --accent: #d97706;
+    --accent-bg: rgba(217, 119, 6, 0.08);
+    --accent-border: rgba(217, 119, 6, 0.25);
+  }
+  [data-color="orange"] {
+    --accent: #ea580c;
+    --accent-bg: rgba(234, 88, 12, 0.08);
+    --accent-border: rgba(234, 88, 12, 0.25);
+  }
+  [data-color="violet"] {
+    --accent: #7c3aed;
+    --accent-bg: rgba(124, 58, 237, 0.08);
+    --accent-border: rgba(124, 58, 237, 0.25);
+  }
+  [data-color="cyan"] {
+    --accent: #0891b2;
+    --accent-bg: rgba(8, 145, 178, 0.08);
+    --accent-border: rgba(8, 145, 178, 0.25);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg-body);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .dashboard {
+    width: 100%;
+    max-width: 1040px;
+  }
+
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .dashboard-title {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    color: #0a2f6c;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .dashboard-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* ===== Лента вкладок (Tabs) ===== */
+  .sectors-row-wrapper {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .sectors-row {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 6px 4px 16px 4px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .sectors-row::-webkit-scrollbar {
+    height: 5px;
+  }
+  .sectors-row::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sectors-row::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+
+  .sector-tab {
+    flex: 0 0 auto;
+    padding: 14px 20px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    outline: none;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .sector-tab:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+  }
+
+  .sector-tab:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+  }
+
+  .sector-tab.active {
+    background: var(--card-bg);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .sector-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.25s ease;
+  }
+
+  .sector-tab:hover .sector-icon,
+  .sector-tab.active .sector-icon {
+    transform: scale(1.15);
+  }
+
+  .sector-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+  }
+
+  .sector-tab.active .sector-name {
+    color: var(--text-primary);
+  }
+
+  /* ===== Детальная карточка ===== */
+  .detail-panel {
+    position: relative;
+    min-height: 220px;
+  }
+
+  .detail-card {
+    display: none;
+  }
+
+  .detail-card.active {
+    display: block;
+    animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fadeSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .detail-inner {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-top: 4px solid var(--accent);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .detail-icon-bg {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+
+  .detail-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .detail-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+
+  .detail-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* ===== Теги технологий ===== */
+  .tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px border-solid var(--border-color);
+  }
+
+  .tech-tag {
+    padding: 6px 14px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.2px;
+    animation: tagFadeIn 0.3s ease forwards;
+  }
+
+  @keyframes tagFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* ===== Адаптивность ===== */
+  @media (max-width: 640px) {
+    body {
+      padding: 20px 12px;
+    }
+    .detail-inner {
+      padding: 24px 20px;
+    }
+    .detail-header {
+      gap: 12px;
+    }
+    .detail-icon-bg {
+      width: 44px;
+      height: 44px;
+      font-size: 1.5rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Где уже работает ИИ</h1>
+    <p class="dashboard-subtitle">Выберите сферу, чтобы узнать подробности применения технологий</p>
+  </div>
+
+  <div class="sectors-row-wrapper">
+    <div class="sectors-row" id="sectorsRow" role="tablist" aria-label="Сферы применения ИИ"></div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel"></div>
+
+</div>
+
+<script>
+const sectors = [
+  {
+    id: 'it',
+    icon: '💻',
+    name: 'IT и Телеком',
+    color: 'blue',
+    tags: ['RAG', 'NLP', 'СППР', 'Автоматизация'],
+    text: 'Здесь ИИ используется как <strong>платформенная технология</strong>. Например, ИИ-ассистент на базе RAG (Retrieval-Augmented Generation) автоматизирует рутинные процессы: транскрибацию встреч, подготовку отчётов и ответов клиентам, сокращая время поиска информации в разы. Также активно применяются <strong>системы поддержки принятия решений</strong> (СППР) и обработка естественного языка (NLP) для работы с документацией.'
+  },
+  {
+    id: 'med',
+    icon: '🏥',
+    name: 'Медицина',
+    color: 'green',
+    tags: ['Диагностика', 'СППР', 'Компьютерное зрение', 'МРТ / КТ'],
+    text: 'ИИ стал незаменимым помощником в диагностике. От <strong>55% до 60%</strong> решений здесь связаны с системами поддержки принятия решений, которые помогают врачам анализировать медицинские изображения (МРТ, КТ, рентген), выявлять патологии и ставить более точные диагнозы.'
+  },
+  {
+    id: 'fin',
+    icon: '🏦',
+    name: 'Финансы',
+    color: 'amber',
+    tags: ['GenAI', 'ML-модели', 'Антифрод', 'Риск-менеджмент'],
+    text: 'Банки и страховые компании активно экспериментируют с <strong>генеративным ИИ</strong> (GenAI) для анализа документов, подготовки клиентских материалов и автоматизации внутренних процессов. ML-модели используются для прогнозирования рыночных трендов, управления рисками и оценки кредитоспособности. Крупные банки применяют генеративные ИИ для <strong>анализа транзакций, выявления мошенничества</strong> и создания персонализированных продуктов.'
+  },
+  {
+    id: 'industry',
+    icon: '🏭',
+    name: 'Промышленность',
+    color: 'orange',
+    tags: ['Компьютерное зрение', 'Предиктивное ТО', 'Видеоаналитика', 'Оптимизация'],
+    text: 'Здесь преобладают прагматичные сценарии: <strong>контроль качества</strong> с помощью компьютерного зрения (до 20% кейсов), предиктивное обслуживание оборудования (профилактика поломок) и оптимизация цепочек поставок. Например, видеоаналитика помогает отслеживать <strong>соблюдение техники безопасности</strong> на производстве в реальном времени.'
+  },
+  {
+    id: 'retail',
+    icon: '🛒',
+    name: 'Ритейл',
+    color: 'violet',
+    tags: ['Рекомендации', 'Персонализация', 'GenAI', 'Аналитика'],
+    text: 'Классический пример — <strong>системы рекомендаций</strong>, которые анализируют поведение покупателей и историю покупок, чтобы предлагать наиболее подходящие товары, увеличивая продажи и удовлетворённость клиентов. <strong>Генеративный ИИ</strong> также помогает создавать персонализированные рекламные кампании.'
+  },
+  {
+    id: 'gov',
+    icon: '🏛️',
+    name: 'Госсектор',
+    color: 'cyan',
+    tags: ['СППР — 35%', 'CV — 29%', 'NLP', 'Документооборот'],
+    text: 'Здесь наиболее востребованы <strong>системы поддержки принятия решений (35%)</strong> и компьютерное зрение (29%) для решения задач в административных процессах, социальной сфере и транспортной инфраструктуре. NLP используется для <strong>анализа обращений граждан</strong> и обработки больших объёмов документов.'
+  }
+];
+
+const row = document.getElementById('sectorsRow');
+const panel = document.getElementById('detailPanel');
+const tabs = [];
+
+sectors.forEach((s, index) => {
+  // Создание Таба
+  const tab = document.createElement('button');
+  tab.className = 'sector-tab';
+  tab.id = `tab-${s.id}`;
+  tab.setAttribute('role', 'tab');
+  tab.setAttribute('aria-selected', 'false');
+  tab.setAttribute('aria-controls', `panel-${s.id}`);
+  tab.setAttribute('tabindex', index === 0 ? '0' : '-1');
+  tab.setAttribute('data-color', s.color);
+  tab.innerHTML = `<span class="sector-icon" aria-hidden="true">${s.icon}</span><span class="sector-name">${s.name}</span>`;
+  row.appendChild(tab);
+  tabs.push(tab);
+
+  // Создание Карточки
+  const card = document.createElement('div');
+  card.className = 'detail-card';
+  card.id = `panel-${s.id}`;
+  card.setAttribute('role', 'tabpanel');
+  card.setAttribute('aria-labelledby', `tab-${s.id}`);
+  card.setAttribute('data-color', s.color);
+ 
+  const tagsHtml = s.tags.map((tag, i) => `<span class="tech-tag" style="animation-delay: ${i * 0.05}s">${tag}</span>`).join('');
+  card.innerHTML = `
+    <div class="detail-inner">
+      <div class="detail-header">
+        <div class="detail-icon-bg">${s.icon}</div>
+        <h2 class="detail-title">${s.name}</h2>
+      </div>
+      <div class="detail-text">${s.text}</div>
+      <div class="tech-tags">${tagsHtml}</div>
+    </div>
+  `;
+  panel.appendChild(card);
+
+  // Обработчики клика
+  tab.addEventListener('click', () => activateTab(index));
+});
+
+function activateTab(index) {
+  tabs.forEach((tab, i) => {
+    const card = document.getElementById(`panel-${sectors[i].id}`);
+    const isActive = i === index;
+   
+    tab.classList.toggle('active', isActive);
+    tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    tab.setAttribute('tabindex', isActive ? '0' : '-1');
+   
+    if (isActive) {
+      card.classList.add('active');
+      tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    } else {
+      card.classList.remove('active');
+    }
+  });
+}
+
+// Навигация с клавиатуры (Left / Right / Home / End)
+row.addEventListener('keydown', (e) => {
+  const currentActive = tabs.findIndex(tab => tab.classList.contains('active'));
+  let newIndex = currentActive;
+
+  if (e.key === 'ArrowRight') {
+    newIndex = (currentActive + 1) % tabs.length;
+  } else if (e.key === 'ArrowLeft') {
+    newIndex = (currentActive - 1 + tabs.length) % tabs.length;
+  } else if (e.key === 'Home') {
+    newIndex = 0;
+  } else if (e.key === 'End') {
+    newIndex = tabs.length - 1;
+  } else {
+    return;
+  }
+
+  e.preventDefault();
+  activateTab(newIndex);
+  tabs[newIndex].focus();
+});
+
+// Активация первой вкладки по умолчанию
+activateTab(0);
+</script>
+
+</body>
+</html>
